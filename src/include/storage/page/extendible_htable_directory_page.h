@@ -119,7 +119,7 @@ class ExtendibleHTableDirectoryPage {
    */
   auto GetGlobalDepth() const -> uint32_t;
 
-  auto GetMaxDepth() const -> uint32_t;
+  auto GetMaxDepth() const -> uint32_t { return max_depth_; }
 
   /**
    * Increment the global depth of the directory
@@ -197,6 +197,10 @@ class ExtendibleHTableDirectoryPage {
 };
 
 static_assert(sizeof(page_id_t) == 4);
+
+static_assert(sizeof(ExtendibleHTableDirectoryPage) == HTABLE_DIRECTORY_PAGE_METADATA_SIZE +
+                                                           HTABLE_DIRECTORY_ARRAY_SIZE +
+                                                           sizeof(page_id_t) * HTABLE_DIRECTORY_ARRAY_SIZE);
 
 static_assert(sizeof(ExtendibleHTableDirectoryPage) <= BUSTUB_PAGE_SIZE);
 

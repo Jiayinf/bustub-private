@@ -1,3 +1,4 @@
+
 //===----------------------------------------------------------------------===//
 //
 //                         BusTub
@@ -130,6 +131,8 @@ class ExtendibleHTableBucketPage {
    * Prints the bucket's occupancy information
    */
   void PrintBucket() const;
+
+  void Clear() { size_ = 0; }
 
  private:
   uint32_t size_;

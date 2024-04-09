@@ -26,14 +26,34 @@ namespace bustub {
 enum class AccessType { Unknown = 0, Lookup, Scan, Index };
 
 class LRUKNode {
+  friend class LRUKReplacer;
+
  private:
   /** History of last seen K timestamps of this page. Least recent timestamp stored in front. */
   // Remove maybe_unused if you start using them. Feel free to change the member variables as you want.
 
-  [[maybe_unused]] std::list<size_t> history_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] frame_id_t fid_;
-  [[maybe_unused]] bool is_evictable_{false};
+  std::list<size_t> history_;
+  size_t k_{};
+  frame_id_t fid_{};
+  bool is_evictable_{false};
+
+  // bool is_inf_{true};
+
+  // size_t access_count_;
+
+  // std::list<LRUKNode*>::iterator pos_;
+ public:
+  // auto IsEvictable() -> bool;
+  // void SetEvictable(bool evictable);
+  // auto IsInf() -> bool;
+  // void SetInf(bool k);
+  void AddHistory(size_t history);
+  void RemoveHistory();
+  // auto GetSize() -> size_t;
+
+  LRUKNode();
+  explicit LRUKNode(size_t k, frame_id_t frame_id);
+  ~LRUKNode() = default;
 };
 
 /**
@@ -150,12 +170,20 @@ class LRUKReplacer {
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
-  [[maybe_unused]] std::unordered_map<frame_id_t, LRUKNode> node_store_;
-  [[maybe_unused]] size_t current_timestamp_{0};
-  [[maybe_unused]] size_t curr_size_{0};
-  [[maybe_unused]] size_t replacer_size_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] std::mutex latch_;
+  std::unordered_map<frame_id_t, LRUKNode> node_store_;
+  size_t current_timestamp_{0};
+  size_t curr_size_{0};
+  size_t replacer_size_;
+  size_t k_;
+  std::mutex latch_;
+
+  // std::unordered_map<frame_id_t, LRUKNode> node_store_;
+  // std::list<frame_id_t> history_list_;
+  // std::list<frame_id_t> cache_list_;
+  // size_t evictable_size_;
+
+  // std::unordered_map<frame_id_t, LRUKNode> history_map_;
+  // std::unordered_map<frame_id_t, LRUKNode> cache_map_;
 };
 
 }  // namespace bustub
