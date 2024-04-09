@@ -1,3 +1,4 @@
+
 //===----------------------------------------------------------------------===//
 //
 //                         BusTub
@@ -14,7 +15,9 @@
 
 namespace bustub {
 
-SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNode *plan) : AbstractExecutor(exec_ctx) {}
+SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNode *plan) : AbstractExecutor(exec_ctx) {
+  plan_ = plan;
+}
 
 void SeqScanExecutor::Init() {
   table_heap_ = GetExecutorContext()->GetCatalog()->GetTable(plan_->GetTableOid())->table_.get();
@@ -58,5 +61,6 @@ auto SeqScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
     return true;
   }
 }
+
 
 }  // namespace bustub
