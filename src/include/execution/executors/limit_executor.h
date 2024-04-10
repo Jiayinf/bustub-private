@@ -56,6 +56,5 @@ class LimitExecutor : public AbstractExecutor {
   std::unique_ptr<AbstractExecutor> child_executor_;
 
   size_t count_;
-
 };
 }  // namespace bustub
