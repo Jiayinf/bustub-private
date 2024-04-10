@@ -1,4 +1,3 @@
-
 //===----------------------------------------------------------------------===//
 //
 //                         BusTub
@@ -16,7 +15,7 @@
 namespace bustub {
 
 SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNode *plan) : AbstractExecutor(exec_ctx) {
-  plan_ = plan;
+  this->plan_ = plan;
 }
 
 void SeqScanExecutor::Init() {
@@ -61,6 +60,5 @@ auto SeqScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
     return true;
   }
 }
-
 
 }  // namespace bustub
