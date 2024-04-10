@@ -19,18 +19,17 @@ namespace bustub {
 DeleteExecutor::DeleteExecutor(ExecutorContext *exec_ctx, const DeletePlanNode *plan,
                                std::unique_ptr<AbstractExecutor> &&child_executor)
     : AbstractExecutor(exec_ctx) {
-    this->plan_ = plan;
-    this->child_executor_ = std::move(child_executor);
+  this->plan_ = plan;
+  this->child_executor_ = std::move(child_executor);
 }
 
-void DeleteExecutor::Init() { 
-    child_executor_->Init();
-    // auto table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->table_oid_);
-
+void DeleteExecutor::Init() {
+  child_executor_->Init();
+  // auto table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->table_oid_);
 }
 
-auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool { 
-    if (used_) {
+auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
+  if (used_) {
     return false;
   }
   int32_t size = 0;
@@ -40,14 +39,14 @@ auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   auto indices = catalog->GetTableIndexes(table_info->name_);
 
   while (child_executor_->Next(tuple, rid)) {
-
     // delete odd
     auto old_tuple_meta = TupleMeta();
     old_tuple_meta.is_deleted_ = true;
     table_heap->UpdateTupleMeta(old_tuple_meta, *rid);
 
     for (auto index_info : indices) {
-      auto newkey = (*tuple).KeyFromTuple(table_info->schema_, index_info->key_schema_, index_info->index_->GetKeyAttrs());
+      auto newkey =
+          (*tuple).KeyFromTuple(table_info->schema_, index_info->key_schema_, index_info->index_->GetKeyAttrs());
       index_info->index_->DeleteEntry(newkey, *rid, exec_ctx_->GetTransaction());
     }
     size++;

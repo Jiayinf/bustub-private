@@ -10,70 +10,63 @@
 //
 //===----------------------------------------------------------------------===//
 #include "execution/executors/index_scan_executor.h"
+#include "execution/expressions/constant_value_expression.h"
 
 namespace bustub {
 IndexScanExecutor::IndexScanExecutor(ExecutorContext *exec_ctx, const IndexScanPlanNode *plan)
-    : AbstractExecutor(exec_ctx), plan_(plan) {}
+    : AbstractExecutor(exec_ctx) {
+        plan_ = plan;
+    }
 
 void IndexScanExecutor::Init() {
-    index_info_ = (exec_ctx_->GetCatalog()->GetIndex(plan_->GetIndexOid()));
-
-    if (index_info_ == nullptr) {
-       throw ExecutionException("error");
+  found_ = false;
+  auto catalog = exec_ctx_->GetCatalog();
+  auto table_info = catalog->GetTable(plan_->table_oid_);
+  auto indexes = catalog->GetTableIndexes(table_info->name_);
+  for (auto index : indexes) {
+    if (index->index_oid_ == plan_->index_oid_) {
+      index_info_ = index;
     }
-
-    table_info_ = exec_ctx_->GetCatalog()->GetTable(index_info_->table_name_);
-
-    if (table_info_ == nullptr) {
-        throw ExecutionException("error");
-    }
-
-    tree_it_ = (dynamic_cast<BPlusTreeIndexForTwoIntegerColumn *>(index_info_->index_.get()));
-    if (tree_it_ == nullptr) {
-        throw ExecutionException("error");
-    }
-    it_ = (tree_it_->GetBeginIterator());
-    end_it_ = (tree_it_->GetEndIterator());
+  }
+  htable_ = dynamic_cast<HashTableIndexForTwoIntegerColumn *>(index_info_->index_.get());
 }
 
 auto IndexScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
-    
-    while (true) {
-        if (it_ == end_it_) {
-        return false;
-        }
+  if (found_) {
+    return false;
+  }
+  auto catalog = exec_ctx_->GetCatalog();
+  auto table_info = catalog->GetTable(plan_->table_oid_);
+  auto table_heap = table_info->table_.get();
 
-        *rid = (*it_).second;
-        std::pair<TupleMeta, Tuple> res_tuple = table_info_->table_->GetTuple(*rid);
-        // ++it_;
+  std::vector<Value> value;
 
-        if (res_tuple.first.is_deleted_) {
-            *tuple = res_tuple.second;
+  // ConstantValueExpression to AbstractExpressionRef
 
-            if (plan_->filter_predicate_ != nullptr) {
-                auto value = plan_->filter_predicate_->Evaluate(tuple, plan_->OutputSchema());
-                if (value.IsNull() || !value.GetAs<bool>()) {
-                    ++it_;
-                    continue;
-                }
-            }
+  //   for (size_t i = 0; i < plan_->pred_keys_.size(); ++i) {
+  //     auto abstract_expr = (plan_->pred_keys_)[i];
+  //     auto constant_expr = std::dynamic_pointer_cast<ConstantValueExpression>(abstract_expr);
+  //     if (constant_expr) {
+  //         value.push_back(constant_expr->val_);
+  //     }
+  //   }
+  auto constant_expr = std::dynamic_pointer_cast<ConstantValueExpression>((plan_->pred_keys_)[0]);
 
-            ++it_;
-            continue;
-        } 
-       
-        *tuple = res_tuple.second;
-
-        if (plan_->filter_predicate_ != nullptr) {
-            auto value = plan_->filter_predicate_->Evaluate(tuple, plan_->OutputSchema());
-            if (value.IsNull() || !value.GetAs<bool>()) {
-                ++it_;
-                continue;
-            }
-        }
-        ++it_;
-        return true;   
-    }
+  value.push_back(constant_expr->val_);
+  *tuple = Tuple(value, &index_info_->key_schema_);
+  std::vector<RID> r;
+  htable_->ScanKey(*tuple, &r, exec_ctx_->GetTransaction());
+  if (r.empty()) {
+    return false;
+  }
+  *rid = r.front();
+  *tuple = table_heap->GetTuple(*rid).second;
+  std::cout << tuple->ToString(&this->GetOutputSchema()) << std::endl;
+  if (table_heap->GetTuple(*rid).first.is_deleted_) {
+    return false;
+  }
+  found_ = true;
+  return true;
 }
 
 }  // namespace bustub

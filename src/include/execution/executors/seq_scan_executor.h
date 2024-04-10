@@ -53,6 +53,5 @@ class SeqScanExecutor : public AbstractExecutor {
   TableHeap *table_heap_;
   std::vector<RID> rids_;
   std::vector<RID>::iterator rids_iter_;
-
 };
 }  // namespace bustub
